@@ -25,7 +25,7 @@ namespace TranslationTool
             KillProcess(System.Windows.Forms.Application.ProductName);
 
             //自启动
-            //SetAppAutoRun(true);
+            SetAppAutoRun(true);
 
             Startup += App_Startup;
         }
@@ -59,18 +59,20 @@ namespace TranslationTool
             this._notifyIcon = new NotifyIcon();
             this._notifyIcon.BalloonTipText = "翻译小工具";
             this._notifyIcon.ShowBalloonTip(2000);
-            this._notifyIcon.Text = "在线单词查询及翻译\r\ncopyright @ Winter";
+            this._notifyIcon.Text = "在线单词查询、翻译";
             this._notifyIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(System.Windows.Forms.Application.ExecutablePath);
-            this._notifyIcon.Visible = true;
-            //打开菜单项
-            MenuItem open = new MenuItem("打开");
-            open.Click += new EventHandler(ShowMainWindow);
-            //退出菜单项
-            MenuItem exit = new MenuItem("退出");
-            exit.Click += new EventHandler(Close);
+            this._notifyIcon.Visible = true; 
+          
             //关联托盘控件
-            MenuItem[] childen = new MenuItem[] { open, exit };
-            _notifyIcon.ContextMenu = new ContextMenu(childen);
+            var menuItems = new List <MenuItem> {
+                new MenuItem("打开", new EventHandler(ShowMainWindow)), 
+                new MenuItem("退出", new EventHandler(Close))                
+            };
+            var autoStartMenu = new MenuItem("开机启动", new EventHandler(SetAppAutoRun));
+            autoStartMenu.Checked = true;
+            menuItems.Add(autoStartMenu);
+
+            _notifyIcon.ContextMenu = new ContextMenu(menuItems.ToArray());
 
             this._notifyIcon.MouseDoubleClick += new MouseEventHandler((o, e) =>
             {
@@ -118,6 +120,20 @@ namespace TranslationTool
         #endregion
 
         #region 开机自启动
+        private void SetAppAutoRun(object sender, EventArgs e)
+        {
+            var menuItem = sender as MenuItem; 
+            if (menuItem.Checked)
+            {
+                SetAppAutoRun(false);
+                menuItem.Checked = false;
+            }
+            else
+            {
+                SetAppAutoRun(true);
+                menuItem.Checked = true ;
+            } 
+        } 
 
         private void SetAppAutoRun(bool autoRun)
         {
