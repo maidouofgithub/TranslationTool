@@ -29,7 +29,8 @@ namespace Translation.WebApi.GooleApi.BrokenTranslation
             var baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             var gooleJsPath = Path.Combine(baseDirectory, @"Resources\goole.js");
             var jsText = File.ReadAllText(gooleJsPath);
-            var tkValue = ExecuteScript("tk(\"" + text + "\",\"" + tkkMatchedValue + "\")", jsText);
+            //var tkValue = ExecuteScript("tk(\"" + text + "\",\"" + tkkMatchedValue + "\")", jsText);
+            var tkValue = ExecuteScript("tk", jsText, text, tkkMatchedValue);
             string googleTransUrl = $"{googleTransBaseUrl}translate_a/single?client=t&sl={fromLanguage}&tl={toLanguage}&hl=en&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&otf=1&ssel=0&tsel=0&kc=1&tk={tkValue}&q={HttpUtility.UrlEncode(text)}";
             var resultHtml = GetResultHtml(googleTransUrl, cc, "https://translate.google.com/");
             dynamic deserializeObject = Newtonsoft.Json.JsonConvert.DeserializeObject(resultHtml);
@@ -75,6 +76,26 @@ namespace Translation.WebApi.GooleApi.BrokenTranslation
             try
             {
                 string str = scriptControl.Eval(sExpression).ToString();
+                return str;
+            }
+            catch (Exception ex)
+            {
+                string str = ex.Message;
+            }
+            return null;
+        }
+
+        private string ExecuteScript(string sExpression, string sCode,params object[] parpms)
+        {
+            //MSScriptControl.ScriptControl scriptControl = new MSScriptControl.ScriptControl();
+            //scriptControl.UseSafeSubset = true;
+            //scriptControl.Language = "JScript";
+            //scriptControl.AddCode(sCode);
+            try
+            {
+                var engine = new Jurassic.ScriptEngine();
+                engine.Execute(sCode);
+                string str = engine.CallGlobalFunction<string>(sExpression, parpms); 
                 return str;
             }
             catch (Exception ex)
